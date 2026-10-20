@@ -1,0 +1,15 @@
+METEO MÓVIL — PRIMERA VERSIÓN (PWA)
+
+Contenido: mapa y avisos del archivo alertas_edificios.html proporcionado por el usuario.
+
+IMPORTANTE: esta primera versión es una instantánea del mapa existente. NO consulta AEMET en tiempo real ni actualiza automáticamente los avisos. Las alertas pueden estar caducadas.
+
+INSTALACIÓN EN ANDROID Y IPHONE:
+1. Publicar el CONTENIDO de esta carpeta en un alojamiento web con HTTPS (por ejemplo, un hosting autorizado por la empresa). Abrir directamente el archivo local no permite una instalación PWA fiable.
+2. Android: abrir la dirección en Chrome > menú > Instalar aplicación o Añadir a pantalla de inicio.
+3. iPhone: abrir en Safari > Compartir > Añadir a pantalla de inicio.
+
+PARA TENER ALERTAS ACTUALES:
+Hace falta un proceso seguro del lado del servidor que ejecute el código Python original para obtener las alertas AEMET, genere alertas_edificios.html y publique el resultado como index.html de forma periódica. No publicar aemet_key.txt ni otros archivos con secretos. Configurar HTTPS, autenticación si corresponde, hora de actualización y gestión de errores. La PWA por sí sola NO sustituye este proceso.
+
+No subir el ZIP original a un servidor público: contiene una clave de API.
