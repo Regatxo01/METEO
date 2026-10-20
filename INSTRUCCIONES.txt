@@ -1,0 +1,15 @@
+METEO - Actualización automática AEMET
+
+1. En GitHub METEO, Add file > Upload files: sube los archivos de esta carpeta a la raíz.
+   ATENCIÓN: GitHub web no permite subir directamente carpetas ocultas de forma sencilla.
+   Crea el workflow con Add file > Create new file y escribe como nombre:
+   .github/workflows/actualizar.yml
+   Copia el contenido del archivo de este paquete y confirma.
+2. Settings > Secrets and variables > Actions > New repository secret.
+   Name: AEMET_API_KEY; Value: tu clave ACTUAL de AEMET. Nunca subir aemet_key.txt.
+3. Settings > Actions > General > Workflow permissions: Read and write permissions. Guardar.
+4. Actions > Actualizar alertas AEMET > Run workflow. Comprueba que termina en verde.
+5. Se actualizará aproximadamente cada hora, sujeto a límites/retrasos de GitHub.
+IMPORTANTE: las claves antiguas AEMET sin caducidad dejaron de valer el 15/10/2026.
+Este paquete contiene los edificios originales, no la clave.
+Si AEMET no responde, se mantiene el mapa anterior.
