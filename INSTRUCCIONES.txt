@@ -1,15 +1,21 @@
-METEO - Actualización automática AEMET
+METEO - CORRECCIÓN DE GITHUB ACTIONS
 
-1. En GitHub METEO, Add file > Upload files: sube los archivos de esta carpeta a la raíz.
-   ATENCIÓN: GitHub web no permite subir directamente carpetas ocultas de forma sencilla.
-   Crea el workflow con Add file > Create new file y escribe como nombre:
-   .github/workflows/actualizar.yml
-   Copia el contenido del archivo de este paquete y confirma.
-2. Settings > Secrets and variables > Actions > New repository secret.
-   Name: AEMET_API_KEY; Value: tu clave ACTUAL de AEMET. Nunca subir aemet_key.txt.
-3. Settings > Actions > General > Workflow permissions: Read and write permissions. Guardar.
-4. Actions > Actualizar alertas AEMET > Run workflow. Comprueba que termina en verde.
-5. Se actualizará aproximadamente cada hora, sujeto a límites/retrasos de GitHub.
-IMPORTANTE: las claves antiguas AEMET sin caducidad dejaron de valer el 15/10/2026.
-Este paquete contiene los edificios originales, no la clave.
-Si AEMET no responde, se mantiene el mapa anterior.
+1. Descomprime este ZIP.
+2. En tu repositorio METEO, sube a la RAÍZ: actualizar.py, alertas_cp.py,
+   mapa_alertas.py, monitor_aemet.py y leaflet_embebido.py.
+   Sustituye los archivos del mismo nombre si GitHub lo solicita.
+3. Sustituye .github/workflows/actualizar.yml por el de este ZIP.
+   Puedes abrir el archivo en GitHub, pulsar el lápiz y pegar su contenido.
+4. NO subas aemet_key.txt ni otros archivos con claves.
+5. Mantén tu edificios.csv y geocache.json existentes: NO los sustituyas.
+6. Comprueba que Settings > Actions > General > Workflow permissions
+   tiene Read and write permissions.
+7. En Actions > Actualizar alertas AEMET > Run workflow, ejecuta una prueba.
+
+La actualización genera alertas_edificios.html y reemplaza index.html
+con el mapa actualizado. Esto sustituye la interfaz PWA anterior, aunque
+seguirá siendo accesible en el navegador móvil. Para recuperar funciones
+PWA instalables haría falta integrar esta salida con la interfaz anterior.
+
+No se ha podido probar una consulta real a AEMET sin ejecutar el workflow
+con tu clave privada. Si falla, revisa el mensaje del nuevo registro.

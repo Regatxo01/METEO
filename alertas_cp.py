@@ -381,7 +381,7 @@ def main():
         f.write(html)
     print(f"Listo: {salida}")
     print(f"Edificios con alerta: {rojas} rojas, {naranjas} naranjas.")
-    # Ejecución automática sin navegador
+    abrir_archivo(salida)
 
 
 if __name__ == "__main__":
