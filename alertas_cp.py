@@ -25,7 +25,7 @@ import urllib.request
 import webbrowser
 import xml.etree.ElementTree as ET
 from datetime import datetime
-
+from zoneinfo import ZoneInfo
 try:
     import monitor_aemet as M
     from leaflet_embebido import LEAFLET_CSS, LEAFLET_JS
@@ -390,7 +390,7 @@ def main():
     rojas = sum(1 for e in edificios if e["nivel"] == "ROJO")
     naranjas = sum(1 for e in edificios if e["nivel"] == "NARANJA")
     datos = {
-        "fecha": datetime.now().strftime("%d/%m/%Y %H:%M"),
+        "fecha": datetime.now(ZoneInfo("Europe/Madrid")).strftime("%d/%m/%Y %H:%M"),
         "rojas": rojas, "naranjas": naranjas,
         "verdes": len(edificios) - rojas - naranjas,
         "edificios": [{k: v for k, v in e.items() if k != "zona"} for e in edificios],
