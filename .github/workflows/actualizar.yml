@@ -24,7 +24,8 @@ jobs:
           git add index.html alertas_edificios.html geocache.json
           if ! git diff --cached --quiet; then
             git commit -m "Actualizar alertas AEMET"
-            git push
+            git pull --rebase origin main
+            git push origin main
           fi
 
 
