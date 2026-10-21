@@ -240,6 +240,7 @@ PLANTILLA = """<!DOCTYPE html>
 <html lang="es"><head><meta charset="utf-8">
 <title>Alertas AEMET - Edificios</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <style>__LEAFLET_CSS__</style>
 <script>__LEAFLET_JS__</script>
 <style>
@@ -263,12 +264,23 @@ PLANTILLA = """<!DOCTYPE html>
  .etq.n-NARANJA{border-color:#f57c00;color:#a64b00}
  .etq.n-OK{border-color:#2e7d32}
  .sin-etq .etq{display:none}
- @media(max-width:800px){#side{display:none}}
+ #acciones{display:flex;gap:6px;align-items:center;margin-left:auto}
+ #acciones button{background:#fff;color:#182d40;border:0;border-radius:6px;padding:9px 12px;font-weight:600;cursor:pointer}
+ #estado{font-size:11px;opacity:.85}
+ @media(max-width:800px){
+  #top{padding:8px;gap:7px}#top h1{width:100%}#acciones{margin-left:0}
+  #wrap{height:calc(100dvh - 104px);min-height:300px;position:relative}
+  #side{display:flex;position:absolute;z-index:1100;top:0;bottom:0;left:0;width:min(86vw,370px);box-shadow:2px 0 12px #0003;transform:translateX(-110%);transition:transform .2s}
+  body.menu-abierto #side{transform:translateX(0)}
+  #map{width:100%}
+ }
+
 </style></head><body>
 <div id="top"><h1>Alertas AEMET - Edificios</h1><span id="fecha"></span>
  <span class="chip" style="background:#d32f2f" id="nr"></span>
  <span class="chip" style="background:#f57c00" id="nn"></span>
- <span class="chip" style="background:#2e7d32" id="nv"></span></div>
+ <span class="chip" style="background:#2e7d32" id="nv"></span>
+ <div id="acciones"><button type="button" id="abrirMenu">☰ Edificios</button><button type="button" id="actualizarAhora">↻ Actualizar</button><span id="estado"></span></div></div>
 <div id="wrap"><div id="side">
  <div id="ctl"><input type="text" id="buscar" placeholder="Buscar por nombre, código postal, población...">
  <label><input type="checkbox" id="solo"> Solo edificios con alerta</label><br>
@@ -276,6 +288,16 @@ PLANTILLA = """<!DOCTYPE html>
  <div id="lista"></div></div><div id="map"></div></div>
 <script>
 const D = __DATA__;
+// Solicita la versión más reciente publicada, evitando caché del navegador.
+const menuBtn = document.getElementById('abrirMenu');
+menuBtn.onclick = () => { document.body.classList.toggle('menu-abierto'); setTimeout(() => map.invalidateSize(),250); };
+document.getElementById('actualizarAhora').onclick = () => {
+ document.getElementById('estado').textContent = 'Consultando...';
+ const u = new URL(location.href);u.searchParams.set('actualizado', Date.now().toString());
+ location.replace(u.href);
+};
+// El HTML se genera cada hora en GitHub Actions. La recarga no lanza una nueva consulta AEMET.
+
 const COL = {ROJO:'#d32f2f', NARANJA:'#f57c00', '':'#2e7d32'};
 const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 fecha.textContent = D.fecha;
@@ -333,7 +355,7 @@ function pintar() {
       '<br><small>' + esc(e.poblacion) + ' &middot; ubicación: ' + esc(e.origen) + '</small>' +
       (e.alertas.length ? '<br>' + e.alertas.map(a => '<small style="color:' + COL[a.nivel] + '"><b>' + a.nivel +
         '</b> ' + esc(a.fenomeno) + ' (' + esc(a.inicio) + ' &rarr; ' + esc(a.fin) + ')</small>').join('<br>') : '');
-    d.onclick = () => { if (e.lat != null) { map.setView([e.lat, e.lon], 13); marcador[e.id].openPopup(); } };
+    d.onclick = () => { if (e.lat != null) { map.setView([e.lat, e.lon], 13); marcador[e.id].openPopup(); document.body.classList.remove('menu-abierto'); setTimeout(() => map.invalidateSize(),250); } };
     lista.appendChild(d);
   });
 }
