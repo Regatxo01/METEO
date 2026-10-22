@@ -1,0 +1,11 @@
+METEO - ACTUALIZACION DESDE GITHUB
+
+1. Sube el CONTENIDO de esta carpeta al repositorio Regatxo01/METEO en la rama main, manteniendo .github/workflows/actualizar.yml.
+2. Comprueba en Settings > Secrets and variables > Actions que existe AEMET_API_KEY (no escribas la clave en archivos públicos).
+3. En Actions > Actualizar alertas AEMET > Run workflow ejecuta una prueba.
+4. Confirma que el workflow termina en verde y que cambia la fecha de la web publicada.
+5. GitHub intentará consultar AEMET en los minutos 17 y 47 de cada hora. El cron puede sufrir retrasos.
+6. El botón Actualizar de la web comprueba una publicación nueva de GitHub, SIN llamar directamente a AEMET.
+7. Para forzar una consulta AEMET manual, entra en GitHub Actions y pulsa Run workflow. GitHub Pages no puede iniciar un workflow con seguridad sin autenticación o un backend.
+8. El reloj de España avanza en tiempo real. La fecha Última consulta AEMET solo cambia tras una consulta y publicación correctas.
+9. Si la web no cambia, revisa el registro del workflow y el secreto AEMET_API_KEY. No se han podido probar peticiones reales a AEMET aquí.

@@ -276,7 +276,7 @@ PLANTILLA = """<!DOCTYPE html>
  }
 
 </style></head><body>
-<div id="top"><h1>Alertas AEMET - Edificios</h1><span id="fecha"></span>
+<div id="top"><h1>Alertas AEMET - Edificios</h1><span id="fecha"></span><span id="reloj" title="Hora actual de España"></span>
  <span class="chip" style="background:#d32f2f" id="nr"></span>
  <span class="chip" style="background:#f57c00" id="nn"></span>
  <span class="chip" style="background:#2e7d32" id="nv"></span>
@@ -288,19 +288,43 @@ PLANTILLA = """<!DOCTYPE html>
  <div id="lista"></div></div><div id="map"></div></div>
 <script>
 const D = __DATA__;
-// Solicita la versión más reciente publicada, evitando caché del navegador.
+// GitHub Pages sirve archivos estáticos: este botón comprueba una publicación nueva.
 const menuBtn = document.getElementById('abrirMenu');
 menuBtn.onclick = () => { document.body.classList.toggle('menu-abierto'); setTimeout(() => map.invalidateSize(),250); };
-document.getElementById('actualizarAhora').onclick = () => {
- document.getElementById('estado').textContent = 'Consultando...';
- const u = new URL(location.href);u.searchParams.set('actualizado', Date.now().toString());
- location.replace(u.href);
-};
-// El HTML se genera cada hora en GitHub Actions. La recarga no lanza una nueva consulta AEMET.
+const estado = document.getElementById('estado');
+const botonActualizar = document.getElementById('actualizarAhora');
+const urlPublicada = new URL('index.html', location.href);
+function horaActual() {
+ document.getElementById('reloj').textContent = 'Hora España: ' + new Intl.DateTimeFormat('es-ES', {timeZone:'Europe/Madrid',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date());
+}
+horaActual(); setInterval(horaActual, 1000);
+async function comprobarPublicacion(silencioso=false) {
+ if (location.protocol === 'file:') { if(!silencioso) estado.textContent='Para actualizar desde GitHub, abre la web publicada.'; return; }
+ botonActualizar.disabled=true;
+ if(!silencioso) estado.textContent='Comprobando última publicación de GitHub...';
+ try {
+  const u = new URL(urlPublicada.href); u.searchParams.set('_t', String(Date.now()));
+  const r = await fetch(u.href, {cache:'no-store', headers:{'Cache-Control':'no-cache'}});
+  if (!r.ok) throw new Error('HTTP '+r.status);
+  const html = await r.text();
+  const m = html.match(/const D\s*=\s*(\{[^\n]*\});/);
+  if (!m) throw new Error('No se encuentra la fecha de la publicación');
+  const remoto = JSON.parse(m[1]);
+  if (remoto.fecha !== D.fecha) {
+   estado.textContent='Hay datos nuevos. Cargando...';
+   location.replace(u.href); return;
+  }
+  if(!silencioso) estado.textContent='Sin nueva publicación. Última consulta AEMET: '+D.fecha;
+ } catch(e) { if(!silencioso) estado.textContent='No se pudo comprobar GitHub: '+e.message; }
+ finally {botonActualizar.disabled=false;}
+}
+botonActualizar.onclick=()=>comprobarPublicacion(false);
+// Revisa periódicamente si GitHub Actions ha publicado una consulta nueva.
+setInterval(()=>comprobarPublicacion(true), 5*60*1000);
 
 const COL = {ROJO:'#d32f2f', NARANJA:'#f57c00', '':'#2e7d32'};
 const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-fecha.textContent = D.fecha;
+fecha.textContent = 'Última consulta AEMET: ' + D.fecha;
 nr.textContent = D.rojas + ' en rojo'; nn.textContent = D.naranjas + ' en naranja'; nv.textContent = D.verdes + ' sin alerta';
 
 const map = L.map('map');

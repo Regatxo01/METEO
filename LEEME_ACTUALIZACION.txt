@@ -1,0 +1,9 @@
+METEO CORREGIDO - ACTUALIZACION
+
+GITHUB PAGES: subir los archivos modificados a GitHub. El boton Actualizar comprueba si hay un HTML mas reciente; no puede forzar una consulta AEMET en GitHub Pages. El workflow sigue consultando cada hora.
+
+WINDOWS: instalar Python si no existe, guardar AEMET_API_KEY en variable de entorno o aemet_key.txt (NO subir este ultimo a GitHub), abrir ABRIR_METEO_WINDOWS.bat y usar http://127.0.0.1:8765/. El boton Actualizar consulta AEMET realmente y vuelve a cargar mapa y edificios.
+
+La hora actual es un reloj independiente. AEMET consultada indica la hora real de generacion de datos.
+
+NOTA: la consulta real no se ha probado sin clave AEMET. No se han configurado aun usuarios ni envio de correos.
