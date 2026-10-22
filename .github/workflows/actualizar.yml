@@ -3,9 +3,9 @@ concurrency:
   group: meteo-actualizacion
   cancel-in-progress: true
 on:
-  workflow_dispatch:
   schedule:
-    - cron: '17 * * * *'
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
 permissions:
   contents: write
 jobs:
