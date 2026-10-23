@@ -24,7 +24,7 @@ jobs:
           ref: main
           fetch-depth: 0
 
-      - name: Preparar Python
+       - name: Preparar Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -32,6 +32,8 @@ jobs:
       - name: Consultar AEMET y generar mapa
         env:
           AEMET_API_KEY: ${{ secrets.AEMET_API_KEY }}
+          SMTP_USUARIO: ${{ secrets.SMTP_USUARIO }}
+          SMTP_CLAVE: ${{ secrets.SMTP_CLAVE }}
         run: python actualizar.py
 
       - name: Guardar mapa actualizado
