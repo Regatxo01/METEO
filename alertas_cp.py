@@ -276,7 +276,7 @@ PLANTILLA = """<!DOCTYPE html>
  }
 
 </style></head><body>
-<div id="top"><h1>Alertas AEMET - Edificios</h1><span id="fecha"></span><span id="reloj" title="Hora actual de España"></span>
+<div id="top"><h1>Alertas AEMET - Edificios</h1><span id="fecha"></span><span id="antiguedad" class="chip" title="Tiempo desde la última consulta AEMET" style="background:#616161">Calculando antigüedad...</span><span id="reloj" title="Hora actual de España"></span>
  <span class="chip" style="background:#d32f2f" id="nr"></span>
  <span class="chip" style="background:#f57c00" id="nn"></span>
  <span class="chip" style="background:#2e7d32" id="nv"></span>
@@ -298,6 +298,26 @@ function horaActual() {
  document.getElementById('reloj').textContent = 'Hora España: ' + new Intl.DateTimeFormat('es-ES', {timeZone:'Europe/Madrid',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date());
 }
 horaActual(); setInterval(horaActual, 1000);
+function actualizarAntiguedad() {
+ const indicador = document.getElementById('antiguedad');
+ const coincidencia = /^(\\d{2})\\/(\\d{2})\\/(\\d{4})\\s+(\\d{2}):(\\d{2})$/.exec(String(D.fecha || '').trim());
+ if (!coincidencia) { indicador.textContent = 'Antigüedad: fecha no disponible'; indicador.style.background = '#616161'; return; }
+ const [, dia, mes, anio, hora, minuto] = coincidencia;
+ const fechaUTC = Date.UTC(+anio, +mes - 1, +dia, +hora, +minuto);
+ const zona = new Intl.DateTimeFormat('en-US', {timeZone:'Europe/Madrid',timeZoneName:'shortOffset'}).formatToParts(new Date(fechaUTC));
+ const textoZona = (zona.find(p => p.type === 'timeZoneName') || {}).value || 'GMT+1';
+ const offset = /GMT([+-])(\\d{1,2})(?::(\\d{2}))?/.exec(textoZona);
+ const minutosOffset = offset ? (offset[1] === '+' ? 1 : -1) * (+offset[2] * 60 + +(offset[3] || 0)) : 60;
+ const momentoConsulta = fechaUTC - minutosOffset * 60000;
+ const minutos = Math.max(0, Math.floor((Date.now() - momentoConsulta) / 60000));
+ indicador.textContent = minutos < 1 ? 'Consultado hace menos de 1 min' : 'Consultado hace ' + minutos + ' min';
+ const color = minutos < 20 ? '#2e7d32' : minutos <= 40 ? '#ef6c00' : '#c62828';
+ indicador.style.background = color;
+ indicador.title = minutos < 20 ? 'Actualizado' : minutos <= 40 ? 'Con retraso' : 'Sin actualizar hace más de 40 minutos';
+}
+actualizarAntiguedad();
+setInterval(actualizarAntiguedad, 60000);
+
 async function comprobarPublicacion(silencioso=false) {
  if (location.protocol === 'file:') { if(!silencioso) estado.textContent='Para actualizar desde GitHub, abre la web publicada.'; return; }
  botonActualizar.disabled=true;
