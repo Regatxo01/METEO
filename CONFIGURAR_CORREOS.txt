@@ -1,0 +1,28 @@
+METEO - CORREOS AUTOMATICOS GMX
+
+1. En GitHub > Settings > Secrets and variables > Actions > New repository secret, crear:
+   SMTP_USUARIO = correo completo GMX
+   SMTP_CLAVE = contraseña de aplicación o credencial SMTP autorizada
+   Opcional: SMTP_REMITENTE = misma dirección GMX
+   Nunca poner claves en archivos del repositorio.
+
+2. En destinatarios.json, reemplazar el ejemplo con las direcciones deseadas:
+   {"destinatarios":[{"nombre":"Paco","correo":"paco@ejemplo.es","activo":true}]}
+   Los colaboradores con permisos de escritura del repositorio pueden modificarla.
+   AVISO: el archivo es PUBLICO si el repositorio es público. No utilizar para correos
+   privados/confidenciales. Para lista privada y panel multiadministrador hace falta
+   almacenamiento + autenticación externos.
+
+3. Subir todos los archivos actualizados al repositorio y ejecutar Actions >
+   Actualizar alertas AEMET > Run workflow para probar.
+
+4. Solo se envían avisos de nivel NARANJA o ROJO, nuevos o con cambios en sus datos.
+   No se envían correos repetidos si no cambian los datos. El estado queda en
+   estado_correos.json para la próxima ejecución.
+
+5. Si no hay credenciales SMTP o destinatarios activos, NO se modifica el estado.
+   Si SMTP falla, el workflow falla para permitir revisar el error y reintentar.
+
+6. IMPORTANTE: GMX puede requerir autorización adicional para SMTP desde GitHub.
+   No hay panel de administración privado implementado en esta entrega.
+   El primer envío con alertas existentes puede comunicar todas las alertas activas.

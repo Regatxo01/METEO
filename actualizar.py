@@ -9,6 +9,8 @@ import alertas_cp
 
 # No abrir navegador en un servidor remoto.
 alertas_cp.abrir_archivo = lambda path: print("Mapa generado:", path)
-alertas_cp.main()
+datos = alertas_cp.main()
+from avisos_email import procesar_avisos
+procesar_avisos(datos)
 shutil.copyfile("alertas_edificios.html", "index.html")
 print("index.html actualizado correctamente")

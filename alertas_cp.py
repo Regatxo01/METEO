@@ -448,6 +448,7 @@ def main():
     print(f"Listo: {salida}")
     print(f"Edificios con alerta: {rojas} rojas, {naranjas} naranjas.")
     abrir_archivo(salida)
+    return datos
 
 
 if __name__ == "__main__":
