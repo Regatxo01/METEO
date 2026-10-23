@@ -24,7 +24,7 @@ jobs:
           ref: main
           fetch-depth: 0
 
-       - name: Preparar Python
+      - name: Preparar Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -34,6 +34,7 @@ jobs:
           AEMET_API_KEY: ${{ secrets.AEMET_API_KEY }}
           SMTP_USUARIO: ${{ secrets.SMTP_USUARIO }}
           SMTP_CLAVE: ${{ secrets.SMTP_CLAVE }}
+          SMTP_REMITENTE: ${{ secrets.SMTP_REMITENTE }}
         run: python actualizar.py
 
       - name: Guardar mapa actualizado
@@ -42,7 +43,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add index.html alertas_edificios.html
+          git add index.html alertas_edificios.html estado_correos.json
 
           if git diff --cached --quiet; then
             echo "No hay cambios que guardar"
