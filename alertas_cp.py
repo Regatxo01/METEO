@@ -307,7 +307,7 @@ async function comprobarPublicacion(silencioso=false) {
   const r = await fetch(u.href, {cache:'no-store', headers:{'Cache-Control':'no-cache'}});
   if (!r.ok) throw new Error('HTTP '+r.status);
   const html = await r.text();
-  const m = html.match(/const D\s*=\s*(\{[^\n]*\});/);
+  const m = html.match(/const D\s*=\s*(\{[^\\r\\n]*\});/);
   if (!m) throw new Error('No se encuentra la fecha de la publicación');
   const remoto = JSON.parse(m[1]);
   if (remoto.fecha !== D.fecha) {
