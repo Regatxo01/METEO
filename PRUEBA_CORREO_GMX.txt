@@ -1,0 +1,18 @@
+PRUEBA DE CORREO GMX PARA METEO
+
+1. Sube a GitHub todos los archivos nuevos del ZIP, incluyendo:
+   - probar_correo.py
+   - .github/workflows/probar_correo.yml
+   Mantén el resto de archivos actuales; no borres el mapa.
+2. Comprueba que en Settings > Secrets and variables > Actions existen:
+   SMTP_USUARIO y SMTP_CLAVE.
+3. Abre Actions > Probar correo GMX > Run workflow.
+4. En el registro, abre 'Enviar correo de prueba'.
+5. Si aparece 'Prueba SMTP enviada correctamente', revisa la bandeja de entrada
+   y correo no deseado de los destinatarios activos.
+
+Esta prueba NO consulta AEMET, NO modifica el mapa ni estado_correos.json,
+y NO se ejecuta automáticamente cada 15 minutos.
+
+Si el servidor GMX devuelve error de autenticación, revisa el acceso SMTP
+externo y si la cuenta requiere contraseña de aplicación.
