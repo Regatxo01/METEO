@@ -1,0 +1,16 @@
+PRUEBA DE ALERTAS NARANJA Y ROJA (SIMULADAS)
+
+Sube estos dos archivos a GitHub conservando sus rutas:
+- probar_alertas.py (raíz del repositorio)
+- .github/workflows/probar_alertas.yml
+
+En GitHub: Actions > Probar alertas naranja y roja > Run workflow.
+
+Se enviarán DOS correos reales a todos los destinatarios activos:
+1. Alerta NARANJA de simulación.
+2. Cambio a ROJO de simulación.
+La segunda comprobación NARANJA no enviará correo duplicado.
+
+IMPORTANTE: Son alertas ficticias, claramente identificadas como SIMULACIÓN.
+No consulta AEMET, no cambia el mapa, ni modifica estado_correos.json.
+Si GMX falla, el flujo mostrará el error y se marcará en rojo.
