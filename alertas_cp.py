@@ -392,7 +392,7 @@ function actualizarAntiguedad() {
  const momentoConsulta = fechaUTC - minutosOffset * 60000;
  const minutos = Math.max(0, Math.floor((Date.now() - momentoConsulta) / 60000));
  indicador.textContent = minutos < 1 ? 'Consultado hace menos de 1 min' : 'Consultado hace ' + minutos + ' min';
- const color = minutos < 20 ? '#2e7d32' : minutos <= 40 ? '#ef6c00' : '#c62828';
+ const color = '#1565c0';
  indicador.style.background = color;
  indicador.title = minutos < 20 ? 'Actualizado' : minutos <= 40 ? 'Con retraso' : 'Sin actualizar hace más de 40 minutos';
 }
