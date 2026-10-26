@@ -1,5 +1,9 @@
 {
   "destinatarios": [
-    {"PACO": "", "regatxo@hotmail.com": "", "activo": false}
+    {
+      "nombre": "PACO",
+      "correo": "regatxo@hotmail.com",
+      "activo": true
+    }
   ]
 }
