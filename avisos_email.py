@@ -45,7 +45,7 @@ def claves_actuales(datos):
 def procesar_avisos(datos):
     usuario = os.getenv("SMTP_USUARIO", "").strip()
     clave = os.getenv("SMTP_CLAVE", "")
-    remitente = os.getenv("SMTP_REMITENTE", usuario).strip()
+    remitente = usuario
     if not usuario or not clave:
         print("Correos desactivados: faltan SMTP_USUARIO o SMTP_CLAVE; estado sin modificar.")
         return
