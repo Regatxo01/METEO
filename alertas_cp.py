@@ -275,8 +275,35 @@ PLANTILLA = """<!DOCTYPE html>
   #map{width:100%}
  }
 
+
+ /* Cabecera adaptable para pantallas pequeñas */
+ #top{box-sizing:border-box;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:7px 12px;align-items:center;padding:8px 12px}
+ #marca{grid-column:1;grid-row:1 / span 2;display:flex;align-items:center;background:#fff;border-radius:6px;padding:3px 5px}
+ #marca img{display:block;width:106px;height:auto;max-height:51px;object-fit:contain}
+ #top h1{grid-column:2;grid-row:1;font-size:15px;line-height:1.2;min-width:0}
+ #fecha{grid-column:2;grid-row:2;font-size:11px}
+ #acciones{grid-column:3;grid-row:1 / span 2;display:flex;align-items:center;gap:7px;margin-left:0}
+ #acciones button{white-space:nowrap}
+ #antiguedad,#reloj,#nr,#nn,#nv{font-size:12px}
+ #wrap{height:calc(100dvh - var(--cabecera-alto, 90px));min-height:240px}
+ @media(max-width:800px){
+   #top{grid-template-columns:78px minmax(0,1fr);gap:6px 9px;padding:7px 9px}
+   #marca{grid-column:1;grid-row:1 / span 2;padding:2px 3px}
+   #marca img{width:72px;max-height:39px}
+   #top h1{grid-column:2;grid-row:1;font-size:13px}
+   #fecha{grid-column:2;grid-row:2;font-size:10px;overflow-wrap:anywhere}
+   #antiguedad{grid-column:1 / -1;grid-row:3;justify-self:start}
+   #reloj{grid-column:1 / -1;grid-row:4;font-size:11px}
+   #nr{grid-column:1;grid-row:5;justify-self:stretch;text-align:center}
+   #nn{grid-column:2;grid-row:5;justify-self:stretch;text-align:center}
+   #nv{grid-column:1 / -1;grid-row:6;justify-self:start}
+   #acciones{grid-column:1 / -1;grid-row:7;display:grid;grid-template-columns:1fr 1fr;gap:7px;width:100%}
+   #acciones button{width:100%;min-height:38px;padding:8px 6px;font-size:13px}
+   #estado{grid-column:1 / -1;min-height:0;overflow-wrap:anywhere}
+   #side{width:min(86vw,370px)}
+ }
 </style></head><body>
-<div id="top"><h1>Alertas AEMET - Edificios</h1><span id="fecha"></span><span id="antiguedad" class="chip" title="Tiempo desde la última consulta AEMET" style="background:#616161">Calculando antigüedad...</span><span id="reloj" title="Hora actual de España"></span>
+<div id="top"><div id="marca"><img src="logo-agencia-tributaria.jpg" alt="Agencia Tributaria"></div><h1>Alertas AEMET - Edificios</h1><span id="fecha"></span><span id="antiguedad" class="chip" title="Tiempo desde la última consulta AEMET" style="background:#616161">Calculando antigüedad...</span><span id="reloj" title="Hora actual de España"></span>
  <span class="chip" style="background:#d32f2f" id="nr"></span>
  <span class="chip" style="background:#f57c00" id="nn"></span>
  <span class="chip" style="background:#2e7d32" id="nv"></span>
@@ -289,6 +316,9 @@ PLANTILLA = """<!DOCTYPE html>
 <script>
 const D = __DATA__;
 // GitHub Pages sirve archivos estáticos: este botón comprueba una publicación nueva.
+const ajustarAlturaCabecera = () => document.documentElement.style.setProperty('--cabecera-alto', document.getElementById('top').getBoundingClientRect().height + 'px');
+ajustarAlturaCabecera();
+window.addEventListener('resize', ajustarAlturaCabecera);
 const menuBtn = document.getElementById('abrirMenu');
 menuBtn.onclick = () => { document.body.classList.toggle('menu-abierto'); setTimeout(() => map.invalidateSize(),250); };
 const estado = document.getElementById('estado');
@@ -403,8 +433,23 @@ function pintar() {
     lista.appendChild(d);
   });
 }
-buscar.oninput = pintar; solo.onchange = pintar; pintar();
-etq.onchange = () => document.body.classList.toggle('sin-etq', !etq.checked);
+// Recuperar preferencias de visualización guardadas en este navegador.
+const PREFS_METEO = 'meteo-preferencias-v1';
+try {
+  const preferencias = JSON.parse(localStorage.getItem(PREFS_METEO) || '{}');
+  if (typeof preferencias.mostrarNombres === 'boolean') etq.checked = preferencias.mostrarNombres;
+  if (typeof preferencias.soloAlertas === 'boolean') solo.checked = preferencias.soloAlertas;
+} catch (e) { /* El navegador puede bloquear el almacenamiento; METEO sigue funcionando. */ }
+function guardarPreferencias() {
+  try {
+    localStorage.setItem(PREFS_METEO, JSON.stringify({mostrarNombres: etq.checked, soloAlertas: solo.checked}));
+  } catch (e) { /* Sin almacenamiento persistente disponible. */ }
+}
+document.body.classList.toggle('sin-etq', !etq.checked);
+buscar.oninput = pintar;
+solo.onchange = () => { pintar(); guardarPreferencias(); };
+etq.onchange = () => { document.body.classList.toggle('sin-etq', !etq.checked); guardarPreferencias(); };
+pintar();
 </script></body></html>
 """
 
