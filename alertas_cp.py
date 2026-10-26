@@ -302,12 +302,41 @@ PLANTILLA = """<!DOCTYPE html>
    #estado{grid-column:1 / -1;min-height:0;overflow-wrap:anywhere}
    #side{width:min(86vw,370px)}
  }
+
+/* Cabecera compacta y ordenada, con un único botón de menú */
+#top{grid-template-columns:108px minmax(0,1fr) auto;gap:6px 12px;align-content:center}
+#marca{grid-column:1;grid-row:1 / span 2}
+#top h1{grid-column:2;grid-row:1;font-size:15px}
+#fecha{grid-column:2;grid-row:2;font-size:11px}
+#acciones{grid-column:3;grid-row:1 / span 2;display:flex;width:auto;gap:0}
+#acciones button{min-height:38px}
+#estado{display:none}
+#antiguedad{grid-column:1 / 3;grid-row:3;justify-self:start}
+#reloj{grid-column:3;grid-row:3;justify-self:end}
+#nr{grid-column:1;grid-row:4;text-align:center}
+#nn{grid-column:2;grid-row:4;text-align:center;justify-self:start}
+#nv{grid-column:3;grid-row:4;text-align:center;justify-self:end}
+@media(max-width:800px){
+ #top{grid-template-columns:75px minmax(0,1fr) auto;gap:6px 8px;padding:7px 9px}
+ #marca{grid-column:1;grid-row:1 / span 2}
+ #marca img{width:69px;max-height:38px}
+ #top h1{grid-column:2 / 4;grid-row:1;font-size:13px;line-height:1.2}
+ #fecha{grid-column:2 / 4;grid-row:2;font-size:10px}
+ #antiguedad{grid-column:1 / 3;grid-row:3;font-size:11px}
+ #reloj{grid-column:3;grid-row:3;font-size:10px;text-align:right}
+ #nr{grid-column:1;grid-row:4;font-size:11px}
+ #nn{grid-column:2;grid-row:4;font-size:11px;justify-self:stretch}
+ #nv{grid-column:3;grid-row:4;font-size:11px;justify-self:stretch}
+ #acciones{grid-column:1 / -1;grid-row:5;display:flex;width:100%}
+ #acciones button{width:100%;min-height:38px;font-size:13px}
+}
+@media(max-width:390px){#reloj{grid-column:1 / -1;grid-row:4;justify-self:start}#nr{grid-column:1;grid-row:5}#nn{grid-column:2;grid-row:5}#nv{grid-column:3;grid-row:5}#acciones{grid-row:6}}
 </style></head><body>
 <div id="top"><div id="marca"><img src="logo-agencia-tributaria.jpg" alt="Agencia Tributaria"></div><h1>Alertas AEMET - Edificios</h1><span id="fecha"></span><span id="antiguedad" class="chip" title="Tiempo desde la última consulta AEMET" style="background:#616161">Calculando antigüedad...</span><span id="reloj" title="Hora actual de España"></span>
  <span class="chip" style="background:#d32f2f" id="nr"></span>
  <span class="chip" style="background:#f57c00" id="nn"></span>
  <span class="chip" style="background:#2e7d32" id="nv"></span>
- <div id="acciones"><button type="button" id="abrirMenu">☰ Edificios</button><button type="button" id="actualizarAhora">↻ Actualizar</button><span id="estado"></span></div></div>
+ <div id="acciones"><button type="button" id="abrirMenu">☰ Edificios</button><span id="estado"></span></div></div>
 <div id="wrap"><div id="side">
  <div id="ctl"><input type="text" id="buscar" placeholder="Buscar por nombre, código postal, población...">
  <label><input type="checkbox" id="solo"> Solo edificios con alerta</label><br>
@@ -322,7 +351,7 @@ window.addEventListener('resize', ajustarAlturaCabecera);
 const menuBtn = document.getElementById('abrirMenu');
 menuBtn.onclick = () => { document.body.classList.toggle('menu-abierto'); setTimeout(() => map.invalidateSize(),250); };
 const estado = document.getElementById('estado');
-const botonActualizar = document.getElementById('actualizarAhora');
+const botonActualizar = null; // Actualización manual eliminada; comprobación automática activa
 const urlPublicada = new URL('index.html', location.href);
 function horaActual() {
  document.getElementById('reloj').textContent = 'Hora España: ' + new Intl.DateTimeFormat('es-ES', {timeZone:'Europe/Madrid',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date());
@@ -350,7 +379,7 @@ setInterval(actualizarAntiguedad, 60000);
 
 async function comprobarPublicacion(silencioso=false) {
  if (location.protocol === 'file:') { if(!silencioso) estado.textContent='Para actualizar desde GitHub, abre la web publicada.'; return; }
- botonActualizar.disabled=true;
+ if (botonActualizar) botonActualizar.disabled=true;
  if(!silencioso) estado.textContent='Comprobando última publicación de GitHub...';
  try {
   const u = new URL(urlPublicada.href); u.searchParams.set('_t', String(Date.now()));
@@ -366,9 +395,9 @@ async function comprobarPublicacion(silencioso=false) {
   }
   if(!silencioso) estado.textContent='Sin nueva publicación. Última consulta AEMET: '+D.fecha;
  } catch(e) { if(!silencioso) estado.textContent='No se pudo comprobar GitHub: '+e.message; }
- finally {botonActualizar.disabled=false;}
+ finally {if (botonActualizar) botonActualizar.disabled=false;}
 }
-botonActualizar.onclick=()=>comprobarPublicacion(false);
+
 // Revisa periódicamente si GitHub Actions ha publicado una consulta nueva.
 setInterval(()=>comprobarPublicacion(true), 5*60*1000);
 
