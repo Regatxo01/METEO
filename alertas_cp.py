@@ -331,6 +331,28 @@ PLANTILLA = """<!DOCTYPE html>
  #acciones button{width:100%;min-height:38px;font-size:13px}
 }
 @media(max-width:390px){#reloj{grid-column:1 / -1;grid-row:4;justify-self:start}#nr{grid-column:1;grid-row:5}#nn{grid-column:2;grid-row:5}#nv{grid-column:3;grid-row:5}#acciones{grid-row:6}}
+
+/* Cabecera: reloj a la derecha de consulta y tres indicadores uniformes */
+#antiguedad{grid-column:1 / 3;grid-row:3;justify-self:start}
+#reloj{grid-column:3;grid-row:3;justify-self:end;white-space:nowrap}
+#nr,#nn,#nv{grid-row:4;justify-self:stretch;text-align:center;display:flex;align-items:center;justify-content:center;min-width:0;box-sizing:border-box;border-radius:999px;padding:5px 8px;font-weight:600;white-space:nowrap}
+@media(max-width:800px){
+ #top{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px 7px}
+ #marca{grid-column:1;grid-row:1 / span 2}
+ #top h1{grid-column:2 / 4;grid-row:1}
+ #fecha{grid-column:2 / 4;grid-row:2}
+ #antiguedad{grid-column:1 / 3;grid-row:3;font-size:11px}
+ #reloj{grid-column:3;grid-row:3;font-size:10px;text-align:right;white-space:nowrap}
+ #nr{grid-column:1;grid-row:4;font-size:11px}
+ #nn{grid-column:2;grid-row:4;font-size:11px}
+ #nv{grid-column:3;grid-row:4;font-size:11px}
+ #acciones{grid-column:1 / -1;grid-row:5}
+}
+@media(max-width:390px){
+ #reloj{grid-column:3;grid-row:3;justify-self:end;font-size:9px}
+ #nr,#nn,#nv{grid-row:4;font-size:10px;padding:5px 3px}
+ #acciones{grid-row:5}
+}
 </style></head><body>
 <div id="top"><div id="marca"><img src="logo-agencia-tributaria.jpg" alt="Agencia Tributaria"></div><h1>Alertas AEMET - Edificios</h1><span id="fecha"></span><span id="antiguedad" class="chip" title="Tiempo desde la última consulta AEMET" style="background:#616161">Calculando antigüedad...</span><span id="reloj" title="Hora actual de España"></span>
  <span class="chip" style="background:#d32f2f" id="nr"></span>
@@ -354,7 +376,7 @@ const estado = document.getElementById('estado');
 const botonActualizar = null; // Actualización manual eliminada; comprobación automática activa
 const urlPublicada = new URL('index.html', location.href);
 function horaActual() {
- document.getElementById('reloj').textContent = 'Hora España: ' + new Intl.DateTimeFormat('es-ES', {timeZone:'Europe/Madrid',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date());
+ document.getElementById('reloj').textContent = 'España: ' + new Intl.DateTimeFormat('es-ES', {timeZone:'Europe/Madrid',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date());
 }
 horaActual(); setInterval(horaActual, 1000);
 function actualizarAntiguedad() {
