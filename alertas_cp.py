@@ -359,6 +359,7 @@ PLANTILLA = """<!DOCTYPE html>
 .grupo-provincia>.item{margin:0;border-radius:0}
 .grupo-provincia>.item+.item{border-top:1px solid #e6ebf0}
 #marca{justify-content:center;text-align:center}
+#creditos-meteo{position:fixed;bottom:3px;left:50%;transform:translateX(-50%);z-index:1100;font:9px Arial,sans-serif;color:#475569;background:rgba(255,255,255,.88);padding:2px 7px;border-radius:4px;white-space:nowrap;pointer-events:none}
 </style></head><body>
 <div id="top"><div id="marca"><img src="logo-agencia-tributaria.jpg" alt="Agencia Tributaria"></div><h1>Alertas AEMET - Edificios</h1><span id="fecha"></span><span id="antiguedad" class="chip" title="Tiempo desde la última consulta AEMET" style="background:#616161">Calculando antigüedad...</span><span id="reloj" title="Hora actual de España"></span>
  <span class="chip" style="background:#d32f2f" id="nr"></span>
@@ -531,7 +532,7 @@ buscar.oninput = pintar;
 solo.onchange = () => { pintar(); guardarPreferencias(); };
 etq.onchange = () => { document.body.classList.toggle('sin-etq', !etq.checked); guardarPreferencias(); };
 pintar();
-</script></body></html>
+</script><div id="creditos-meteo">Creado por Roberto Vazquez y Francisco Vicedo</div></body></html>
 """
 
 
