@@ -278,7 +278,7 @@ PLANTILLA = """<!DOCTYPE html>
 
  /* Cabecera adaptable para pantallas pequeñas */
  #top{box-sizing:border-box;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:7px 12px;align-items:center;padding:8px 12px}
- #marca{grid-column:1;grid-row:1 / span 2;display:flex;align-items:center;background:#fff;border-radius:6px;padding:3px 5px}
+ #marca{grid-column:1;grid-row:1 / span 2;display:flex;align-items:center;justify-content:center;text-align:center;background:#fff;border-radius:6px;padding:3px 5px}
  #marca img{display:block;width:106px;height:auto;max-height:51px;object-fit:contain}
  #top h1{grid-column:2;grid-row:1;font-size:15px;line-height:1.2;min-width:0}
  #fecha{grid-column:2;grid-row:2;font-size:11px}
