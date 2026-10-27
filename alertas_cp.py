@@ -278,7 +278,7 @@ PLANTILLA = """<!DOCTYPE html>
 
  /* Cabecera adaptable para pantallas pequeñas */
  #top{box-sizing:border-box;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:7px 12px;align-items:center;padding:8px 12px}
- #marca{grid-column:1;grid-row:1 / span 2;display:flex;align-items:center;justify-content:center;text-align:center;background:#fff;border-radius:6px;padding:3px 5px}
+ #marca{grid-column:1;grid-row:1 / span 2;display:flex;align-items:center;background:#fff;border-radius:6px;padding:3px 5px}
  #marca img{display:block;width:106px;height:auto;max-height:51px;object-fit:contain}
  #top h1{grid-column:2;grid-row:1;font-size:15px;line-height:1.2;min-width:0}
  #fecha{grid-column:2;grid-row:2;font-size:11px}
@@ -353,6 +353,12 @@ PLANTILLA = """<!DOCTYPE html>
  #nr,#nn,#nv{grid-row:4;font-size:10px;padding:5px 3px}
  #acciones{grid-row:5}
 }
+/* Agrupación de edificios por provincias */
+.grupo-provincia{margin:6px 5px 10px;border:1px solid #cbd5e1;border-radius:8px;overflow:hidden;background:#fff}
+.grupo-provincia>summary{cursor:pointer;list-style:revert;background:#eaf1fa;color:#173c66;padding:11px 12px;font-weight:700;position:sticky;top:0;z-index:1}
+.grupo-provincia>.item{margin:0;border-radius:0}
+.grupo-provincia>.item+.item{border-top:1px solid #e6ebf0}
+#marca{justify-content:center;text-align:center}
 </style></head><body>
 <div id="top"><div id="marca"><img src="logo-agencia-tributaria.jpg" alt="Agencia Tributaria"></div><h1>Alertas AEMET - Edificios</h1><span id="fecha"></span><span id="antiguedad" class="chip" title="Tiempo desde la última consulta AEMET" style="background:#616161">Calculando antigüedad...</span><span id="reloj" title="Hora actual de España"></span>
  <span class="chip" style="background:#d32f2f" id="nr"></span>
@@ -468,12 +474,34 @@ Object.values(grupos).forEach(g => {
 });
 if (bounds.length) map.fitBounds(bounds, {padding:[30,30]}); else map.setView([39.4, -0.5], 8);
 
+const provinciasCerradas = new Set();
 function pintar() {
   const q = buscar.value.toLowerCase();
   lista.innerHTML = '';
-  D.edificios.filter(e => (!solo.checked || e.nivel) &&
-     [e.nombre, e.cp, e.poblacion, e.direccion].join(' ').toLowerCase().includes(q))
-  .forEach(e => {
+  const visibles = D.edificios.filter(e => (!solo.checked || e.nivel) &&
+     [e.nombre, e.cp, e.poblacion, e.direccion, e.provincia].join(' ').toLowerCase().includes(q));
+  const ordenEdificios = {"Valencia": ["V01", "V02", "V03", "V04", "V05", "V06", "V07", "V08", "V09", "V10", "V11", "V12", "V13", "V14", "V15", "V16", "V17", "V18", "V19", "V20", "V21"], "Castellón": ["C01", "C02", "C03", "C04", "C05"], "Alicante": ["A01", "A02", "A03", "A04", "A05", "A06", "A07", "A08", "A09", "A10", "A11", "A12", "A13", "A14"]};
+  ['Valencia', 'Castellón', 'Alicante'].forEach(provincia => {
+    const edificiosProvincia = visibles.filter(e => (e.provincia || '').toLocaleLowerCase('es') === provincia.toLocaleLowerCase('es'));
+    edificiosProvincia.sort((a, b) => {
+      const orden = ordenEdificios[provincia];
+      const ia = orden.indexOf(a.id), ib = orden.indexOf(b.id);
+      return (ia < 0 ? 999 : ia) - (ib < 0 ? 999 : ib);
+    });
+    if (!edificiosProvincia.length) return;
+    const seccion = document.createElement('details');
+    seccion.className = 'grupo-provincia';
+    seccion.open = q ? true : !provinciasCerradas.has(provincia);
+    const titulo = document.createElement('summary');
+    titulo.textContent = provincia + ' (' + edificiosProvincia.length + ')';
+    seccion.appendChild(titulo);
+    seccion.addEventListener('toggle', () => {
+      if (!q) {
+        if (seccion.open) provinciasCerradas.delete(provincia);
+        else provinciasCerradas.add(provincia);
+      }
+    });
+    edificiosProvincia.forEach(e => {
     const d = document.createElement('div'); d.className = 'item';
     d.innerHTML = '<span class="lvl" style="background:' + COL[e.nivel] + '"></span><b>' + esc(e.nombre) + '</b>' +
       (e.cp ? '<span class="cp">' + esc(e.cp) + '</span>' : '<span class="cp" style="background:#fde">sin CP</span>') +
@@ -481,7 +509,9 @@ function pintar() {
       (e.alertas.length ? '<br>' + e.alertas.map(a => '<small style="color:' + COL[a.nivel] + '"><b>' + a.nivel +
         '</b> ' + esc(a.fenomeno) + ' (' + esc(a.inicio) + ' &rarr; ' + esc(a.fin) + ')</small>').join('<br>') : '');
     d.onclick = () => { if (e.lat != null) { map.setView([e.lat, e.lon], 13); marcador[e.id].openPopup(); document.body.classList.remove('menu-abierto'); setTimeout(() => map.invalidateSize(),250); } };
-    lista.appendChild(d);
+    seccion.appendChild(d);
+    });
+    lista.appendChild(seccion);
   });
 }
 // Recuperar preferencias de visualización guardadas en este navegador.
