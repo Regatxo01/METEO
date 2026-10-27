@@ -435,7 +435,16 @@ const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<'
 fecha.textContent = 'Última consulta AEMET: ' + D.fecha;
 nr.textContent = D.rojas + ' en rojo'; nn.textContent = D.naranjas + ' en naranja'; nv.textContent = D.verdes + ' sin alerta';
 
-const map = L.map('map');
+// Zona de navegación: provincias de Castellón, Valencia y Alicante.
+// Rectángulo aproximado que engloba las tres provincias (no es una frontera administrativa).
+const zonaPermitida = L.latLngBounds([37.75, -1.70], [40.85, 0.65]);
+const map = L.map('map', {maxBounds: zonaPermitida, maxBoundsViscosity: 1.0});
+function ajustarLimiteZoom() {
+  // Impide alejar el mapa más allá de la vista general de las tres provincias.
+  map.setMinZoom(map.getBoundsZoom(zonaPermitida, false));
+}
+map.whenReady(ajustarLimiteZoom);
+map.on('resize', ajustarLimiteZoom);
 const capa = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {maxZoom:18, attribution:'Tiles &copy; Esri'}).addTo(map);
 let avisado = false;
 capa.on('tileerror', () => { if (avisado) return; avisado = true;
@@ -473,7 +482,7 @@ Object.values(grupos).forEach(g => {
   g.forEach(e => marcador[e.id] = m);
   bounds.push([g[0].lat, g[0].lon]);
 });
-if (bounds.length) map.fitBounds(bounds, {padding:[30,30]}); else map.setView([39.4, -0.5], 8);
+map.fitBounds(zonaPermitida, {padding:[12,12]});
 
 const provinciasCerradas = new Set();
 function pintar() {
