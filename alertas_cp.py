@@ -366,7 +366,7 @@ PLANTILLA = """<!DOCTYPE html>
 .grupo-provincia>.item{margin:0;border-radius:0}
 .grupo-provincia>.item+.item{border-top:1px solid #e6ebf0}
 #marca{justify-content:center;text-align:center}
-#resumen-3dias{grid-column:1 / -1;grid-row:6;font:11px Arial,sans-serif;display:flex;gap:5px;flex-wrap:wrap;align-items:center;padding:3px 0}
+#nr,#nn,#nv{cursor:pointer}#nr:focus-visible,#nn:focus-visible,#nv:focus-visible{outline:3px solid #111;outline-offset:2px}
 #resumen-3dias .dia-aviso{background:#f1f5f9;border:1px solid #cbd5e1;border-radius:5px;padding:4px 7px;white-space:nowrap}
 #resumen-3dias .rojo{color:#b71c1c;font-weight:bold}#resumen-3dias .naranja{color:#b45309;font-weight:bold}#resumen-3dias .verde{color:#267236;font-weight:bold}
 .leaflet-control-attribution{font-size:9px!important;background:rgba(255,255,255,.65)!important;padding:1px 3px!important}
@@ -376,7 +376,7 @@ PLANTILLA = """<!DOCTYPE html>
  <span class="chip" style="background:#d32f2f" id="nr"></span>
  <span class="chip" style="background:#f57c00" id="nn"></span>
  <span class="chip" style="background:#2e7d32" id="nv"></span>
- <div id="acciones"><button type="button" id="abrirMenu">☰ Edificios</button><span id="estado"></span></div><div id="resumen-3dias" aria-label="Avisos oficiales previstos durante los próximos tres días"></div></div>
+ <div id="acciones"><button type="button" id="abrirMenu">☰ Edificios</button><span id="estado"></span></div></div>
 <div id="wrap"><div id="side">
  <div id="ctl"><input type="text" id="buscar" placeholder="Buscar por nombre, código postal, población...">
  <label><input type="checkbox" id="solo"> Solo edificios con alerta</label><br>
@@ -468,30 +468,46 @@ const COL = {ROJO:'#d32f2f', NARANJA:'#f57c00', '':'#2e7d32'};
 const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 fecha.textContent = 'Última consulta AEMET: ' + D.fecha;
 nr.textContent = D.rojas + ' en rojo'; nn.textContent = D.naranjas + ' en naranja'; nv.textContent = D.verdes + ' sin alerta';
-// Conteo por día de calendario en España; incluye avisos que abarcan varios días.
-function resumenAvisosTresDias() {
-  const zona = 'Europe/Madrid';
-  const fmt = new Intl.DateTimeFormat('en-CA', {timeZone:zona,year:'numeric',month:'2-digit',day:'2-digit'});
-  const partes = d => { const v={}; fmt.formatToParts(d).forEach(x=>{v[x.type]=x.value}); return `${v.year}-${v.month}-${v.day}`; };
-  const hoy = new Date();
-  const dias = [0,1,2].map(i=>{const d=new Date(hoy.getTime()+i*86400000);return {clave:partes(d),titulo:['Hoy','Mañana','Pasado mañana'][i]};});
-  const html = dias.map(d=>{
-    let rojo=0,naranja=0;
-    (D.edificios||[]).forEach(e=>{
-      let max=0;
-      (e.alertas||[]).forEach(a=>{
-        const ini=new Date(a.inicio_iso), fin=new Date(a.fin_iso);
-        if(!Number.isFinite(ini.getTime())||!Number.isFinite(fin.getTime()))return;
-        if(partes(ini)<=d.clave && partes(fin)>=d.clave)max=Math.max(max,a.nivel==='ROJO'?2:a.nivel==='NARANJA'?1:0);
-      });
-      if(max===2)rojo++;else if(max===1)naranja++;
+// Indicadores originales: pulsar para ver edificios y fechas de avisos oficiales.
+// Cada edificio cuenta una sola vez por día, con el nivel más alto aplicable.
+function avisosPorDia() {
+  const zona='Europe/Madrid';
+  const fmt=new Intl.DateTimeFormat('en-CA',{timeZone:zona,year:'numeric',month:'2-digit',day:'2-digit'});
+  const clave=d=>{const v={};fmt.formatToParts(d).forEach(p=>v[p.type]=p.value);return `${v.year}-${v.month}-${v.day}`;};
+  const base=new Date();
+  const dias=[0,1,2].map(i=>{const d=new Date(base);d.setUTCDate(d.getUTCDate()+i);return {clave:clave(d),titulo:['Hoy','Mañana','Pasado mañana'][i]};});
+  return dias.map(d=>({ ...d, edificios:(D.edificios||[]).map(e=>{
+    const avisos=(e.alertas||[]).filter(a=>{
+      const ini=new Date(a.inicio_iso),fin=new Date(a.fin_iso);
+      return Number.isFinite(ini.getTime())&&Number.isFinite(fin.getTime())&&clave(ini)<=d.clave&&clave(fin)>=d.clave;
     });
-    return `<span class="dia-aviso"><b>${d.titulo}</b> · <span class="rojo">🔴 ${rojo}</span> <span class="naranja">🟠 ${naranja}</span> <span class="verde">🟢 ${(D.edificios||[]).length-rojo-naranja}</span></span>`;
-  }).join('');
-  document.getElementById('resumen-3dias').innerHTML = html;
+    const nivel=avisos.some(a=>a.nivel==='ROJO')?'ROJO':avisos.some(a=>a.nivel==='NARANJA')?'NARANJA':'VERDE';
+    return {nombre:e.nombre,nivel,avisos};
+  })}));
 }
-resumenAvisosTresDias();
-
+const pronosticoAvisos=avisosPorDia();
+function detalleIndicador(color){
+  const etiquetas={ROJO:'Avisos rojos',NARANJA:'Avisos naranjas',VERDE:'Sin avisos naranja o rojo'};
+  const items=[];
+  pronosticoAvisos.forEach(d=>d.edificios.forEach(e=>{
+    if(e.nivel!==color)return;
+    const info=color==='VERDE'?'':e.avisos.filter(a=>a.nivel===color).map(a=>esc(a.fenomeno||'Aviso AEMET')+' ('+esc(a.inicio||'')+' – '+esc(a.fin||'')+')').join('; ');
+    items.push('<li><b>'+esc(e.nombre)+'</b> — '+esc(d.titulo)+' ('+esc(d.clave)+')'+(info?'<br><small>'+info+'</small>':'')+'</li>');
+  }));
+  mostrarFicha('<h2>'+etiquetas[color]+' · Hoy y próximos 2 días</h2><p>Se muestran avisos oficiales publicados por AEMET. Los avisos aún no emitidos no se pueden anticipar.</p>'+(items.length?'<ul style="padding-left:20px;line-height:1.6">'+items.join('')+'</ul>':'<p>No hay edificios en esta categoría.</p>'));
+}
+[['nr','ROJO'],['nn','NARANJA'],['nv','VERDE']].forEach(([id,color])=>{
+  const el=document.getElementById(id);el.setAttribute('role','button');el.setAttribute('tabindex','0');el.title='Pulsar para consultar edificios y días de los próximos tres días';
+  el.addEventListener('click',()=>detalleIndicador(color));
+  el.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();detalleIndicador(color);}});
+});
+const futuros=pronosticoAvisos.slice(1).flatMap(d=>d.edificios.filter(e=>e.nivel!=='VERDE'));
+if(futuros.length){
+  [['nr','ROJO'],['nn','NARANJA']].forEach(([id,color])=>{
+    const n=pronosticoAvisos.slice(1).reduce((sum,d)=>sum+d.edificios.filter(e=>e.nivel===color).length,0);
+    if(n)document.getElementById(id).textContent+=' · próximos días: '+n;
+  });
+}
 // Zona de navegación: provincias de Castellón, Valencia y Alicante.
 // Rectángulo aproximado que engloba las tres provincias (no es una frontera administrativa).
 const zonaPermitida = L.latLngBounds([37.75, -1.70], [40.85, 0.65]);
