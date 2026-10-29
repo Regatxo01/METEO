@@ -24,7 +24,8 @@ import urllib.parse
 import urllib.request
 import webbrowser
 import xml.etree.ElementTree as ET
-from datetime import datetime
+from prevision_3dias import consultar as consultar_prevision
+from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 try:
     import monitor_aemet as M
@@ -228,7 +229,7 @@ def cruzar(edificios, avisos):
                 if k not in vistos:
                     vistos.add(k)
                     alertas.append({"nivel": a["nivel"], "fenomeno": a["fenomeno"],
-                                    "inicio": M.fmt(a["inicio"]), "fin": M.fmt(a["fin"])})
+                                    "inicio": M.fmt(a["inicio"]), "fin": M.fmt(a["fin"]), "inicio_iso": a["inicio"], "fin_iso": a["fin"]})
                 if ORDEN[a["nivel"]] > ORDEN[nivel]:
                     nivel = a["nivel"]
         e["alertas"], e["nivel"] = alertas, nivel
@@ -359,7 +360,7 @@ PLANTILLA = """<!DOCTYPE html>
 .grupo-provincia>.item{margin:0;border-radius:0}
 .grupo-provincia>.item+.item{border-top:1px solid #e6ebf0}
 #marca{justify-content:center;text-align:center}
-#creditos-meteo{position:fixed;bottom:3px;left:50%;transform:translateX(-50%);z-index:1100;font:9px Arial,sans-serif;color:#475569;background:rgba(255,255,255,.88);padding:2px 7px;border-radius:4px;white-space:nowrap;pointer-events:none}
+.prevision-meteo{margin:8px 0;padding:8px;background:#edf4fb;border-radius:6px;font:12px Arial,sans-serif}.prevision-meteo table{width:100%;border-collapse:collapse}.prevision-meteo td,.prevision-meteo th{padding:4px 3px;text-align:center;border-bottom:1px solid #d5e2ef}.prevision-meteo small{color:#526477}#creditos-meteo{position:fixed;bottom:3px;left:50%;transform:translateX(-50%);z-index:1100;font:9px Arial,sans-serif;color:#475569;background:rgba(255,255,255,.88);padding:2px 7px;border-radius:4px;white-space:nowrap;pointer-events:none}
 </style></head><body>
 <div id="top"><div id="marca"><img src="logo-agencia-tributaria.jpg" alt="Agencia Tributaria"></div><h1>Alertas AEMET - Edificios</h1><span id="fecha"></span><span id="antiguedad" class="chip" title="Tiempo desde la última consulta AEMET" style="background:#616161">Calculando antigüedad...</span><span id="reloj" title="Hora actual de España"></span>
  <span class="chip" style="background:#d32f2f" id="nr"></span>
@@ -373,6 +374,17 @@ PLANTILLA = """<!DOCTYPE html>
  <div id="lista"></div></div><div id="map"></div></div>
 <script>
 const D = __DATA__;
+function tablaPrevision(e) {
+  if (!e.prevision || !e.prevision.length) return '<div class="prevision-meteo">Previsión de tres días no disponible.</div>';
+  const nombres = ['Hoy','Mañana','Pasado mañana'];
+  const filas = e.prevision.map((p,i) => '<tr><td><b>'+nombres[i]+'</b><br><small>'+esc(p.fecha)+'</small></td><td>'+esc(p.estado)+'</td><td>'+esc(p.min)+'° / '+esc(p.max)+'°</td><td>'+esc(p.lluvia)+'%</td></tr>').join('');
+  return '<div class="prevision-meteo"><b>Previsión meteorológica · 3 días</b><table><tr><th>Día</th><th>Tiempo</th><th>Mín./Máx.</th><th>Lluvia</th></tr>'+filas+'</table><small>Predicción Open-Meteo. Avisos oficiales: AEMET.</small></div>';
+}
+function etiquetaAviso(a) {
+  const fecha = Date.parse(a.inicio_iso || '');
+  return Number.isFinite(fecha) && fecha > Date.now() ? 'PREVISTO · ' : '';
+}
+
 // GitHub Pages sirve archivos estáticos: este botón comprueba una publicación nueva.
 const ajustarAlturaCabecera = () => document.documentElement.style.setProperty('--cabecera-alto', document.getElementById('top').getBoundingClientRect().height + 'px');
 ajustarAlturaCabecera();
@@ -469,9 +481,10 @@ Object.values(grupos).forEach(g => {
     html += '<b>' + esc(e.nombre) + '</b>' + (e.cp ? ' <span class="cp">CP ' + esc(e.cp) + '</span>' : '') +
       '<br><small>' + esc(e.direccion) + (e.direccion ? ', ' : '') + esc(e.poblacion) + '</small><br>';
     html += e.alertas.length ? e.alertas.map(a =>
-      '<span style="color:' + COL[a.nivel] + '"><b>' + a.nivel + '</b></span> ' + esc(a.fenomeno) +
+      '<span style="color:' + COL[a.nivel] + '"><b>' + etiquetaAviso(a) + a.nivel + '</b></span> ' + esc(a.fenomeno) +
       ' <small>(' + esc(a.inicio) + ' &rarr; ' + esc(a.fin) + ')</small>').join('<br>')
       : '<span style="color:#2e7d32">Sin alertas naranja/rojas</span>';
+    html += tablaPrevision(e);
     html += '<hr style="margin:6px 0">';
   });
   const m = L.circleMarker([g[0].lat, g[0].lon], {radius: nivel ? 13 : 8, color:'#222', weight:1.5,
@@ -565,6 +578,8 @@ def main():
     print("Consultando avisos de AEMET...")
     avisos = obtener_avisos()
     cruzar(edificios, avisos)
+    print("Consultando previsión de hoy, mañana y pasado mañana...")
+    consultar_prevision(edificios)
 
     edificios.sort(key=lambda e: (-ORDEN[e["nivel"]], e["nombre"]))
     rojas = sum(1 for e in edificios if e["nivel"] == "ROJO")
