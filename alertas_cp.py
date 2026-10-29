@@ -366,13 +366,17 @@ PLANTILLA = """<!DOCTYPE html>
 .grupo-provincia>.item{margin:0;border-radius:0}
 .grupo-provincia>.item+.item{border-top:1px solid #e6ebf0}
 #marca{justify-content:center;text-align:center}
+#resumen-3dias{grid-column:1 / -1;grid-row:6;font:11px Arial,sans-serif;display:flex;gap:5px;flex-wrap:wrap;align-items:center;padding:3px 0}
+#resumen-3dias .dia-aviso{background:#f1f5f9;border:1px solid #cbd5e1;border-radius:5px;padding:4px 7px;white-space:nowrap}
+#resumen-3dias .rojo{color:#b71c1c;font-weight:bold}#resumen-3dias .naranja{color:#b45309;font-weight:bold}#resumen-3dias .verde{color:#267236;font-weight:bold}
+.leaflet-control-attribution{font-size:9px!important;background:rgba(255,255,255,.65)!important;padding:1px 3px!important}
 .prevision-meteo{margin:8px 0;padding:8px;background:#edf4fb;border-radius:6px;font:12px Arial,sans-serif}.prevision-meteo table{width:100%;border-collapse:collapse}.prevision-meteo td,.prevision-meteo th{padding:4px 3px;text-align:center;border-bottom:1px solid #d5e2ef}.prevision-meteo small{color:#526477}.prevision-meteo .icono-tiempo{display:inline-block;font-size:30px;line-height:1.3;min-width:38px;text-align:center;vertical-align:middle}#creditos-meteo{position:fixed;bottom:3px;left:50%;transform:translateX(-50%);z-index:1100;font:9px Arial,sans-serif;color:#475569;background:rgba(255,255,255,.88);padding:2px 7px;border-radius:4px;white-space:nowrap;pointer-events:none}
 </style></head><body>
 <div id="top"><div id="marca"><img src="logo-agencia-tributaria.jpg" alt="Agencia Tributaria"></div><h1>Alertas AEMET - Edificios</h1><span id="fecha"></span><span id="antiguedad" class="chip" title="Tiempo desde la última consulta AEMET" style="background:#616161">Calculando antigüedad...</span><span id="reloj" title="Hora actual de España"></span>
  <span class="chip" style="background:#d32f2f" id="nr"></span>
  <span class="chip" style="background:#f57c00" id="nn"></span>
  <span class="chip" style="background:#2e7d32" id="nv"></span>
- <div id="acciones"><button type="button" id="abrirMenu">☰ Edificios</button><span id="estado"></span></div></div>
+ <div id="acciones"><button type="button" id="abrirMenu">☰ Edificios</button><span id="estado"></span></div><div id="resumen-3dias" aria-label="Avisos oficiales previstos durante los próximos tres días"></div></div>
 <div id="wrap"><div id="side">
  <div id="ctl"><input type="text" id="buscar" placeholder="Buscar por nombre, código postal, población...">
  <label><input type="checkbox" id="solo"> Solo edificios con alerta</label><br>
@@ -464,6 +468,29 @@ const COL = {ROJO:'#d32f2f', NARANJA:'#f57c00', '':'#2e7d32'};
 const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 fecha.textContent = 'Última consulta AEMET: ' + D.fecha;
 nr.textContent = D.rojas + ' en rojo'; nn.textContent = D.naranjas + ' en naranja'; nv.textContent = D.verdes + ' sin alerta';
+// Conteo por día de calendario en España; incluye avisos que abarcan varios días.
+function resumenAvisosTresDias() {
+  const zona = 'Europe/Madrid';
+  const fmt = new Intl.DateTimeFormat('en-CA', {timeZone:zona,year:'numeric',month:'2-digit',day:'2-digit'});
+  const partes = d => { const v={}; fmt.formatToParts(d).forEach(x=>{v[x.type]=x.value}); return `${v.year}-${v.month}-${v.day}`; };
+  const hoy = new Date();
+  const dias = [0,1,2].map(i=>{const d=new Date(hoy.getTime()+i*86400000);return {clave:partes(d),titulo:['Hoy','Mañana','Pasado mañana'][i]};});
+  const html = dias.map(d=>{
+    let rojo=0,naranja=0;
+    (D.edificios||[]).forEach(e=>{
+      let max=0;
+      (e.alertas||[]).forEach(a=>{
+        const ini=new Date(a.inicio_iso), fin=new Date(a.fin_iso);
+        if(!Number.isFinite(ini.getTime())||!Number.isFinite(fin.getTime()))return;
+        if(partes(ini)<=d.clave && partes(fin)>=d.clave)max=Math.max(max,a.nivel==='ROJO'?2:a.nivel==='NARANJA'?1:0);
+      });
+      if(max===2)rojo++;else if(max===1)naranja++;
+    });
+    return `<span class="dia-aviso"><b>${d.titulo}</b> · <span class="rojo">🔴 ${rojo}</span> <span class="naranja">🟠 ${naranja}</span> <span class="verde">🟢 ${(D.edificios||[]).length-rojo-naranja}</span></span>`;
+  }).join('');
+  document.getElementById('resumen-3dias').innerHTML = html;
+}
+resumenAvisosTresDias();
 
 // Zona de navegación: provincias de Castellón, Valencia y Alicante.
 // Rectángulo aproximado que engloba las tres provincias (no es una frontera administrativa).
@@ -475,7 +502,7 @@ function ajustarLimiteZoom() {
 }
 map.whenReady(ajustarLimiteZoom);
 map.on('resize', ajustarLimiteZoom);
-const capa = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {maxZoom:18, attribution:'Tiles &copy; Esri'}).addTo(map);
+const capa = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {maxZoom:18, attribution:'&copy; Esri'}).addTo(map);
 let avisado = false;
 capa.on('tileerror', () => { if (avisado) return; avisado = true;
   const b = document.createElement('div');
