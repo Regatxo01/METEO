@@ -255,6 +255,12 @@ PLANTILLA = """<!DOCTYPE html>
  #ctl input[type=text]{width:95%;padding:5px;margin-bottom:5px}
  #lista{overflow:auto;flex:1}
  #map{flex:1;background:#e9edf0}
+ /* Ficha centrada en pantalla, también para edificios situados en los bordes del mapa */
+ #ficha-edificio{position:fixed;inset:0;z-index:2500;display:none;align-items:center;justify-content:center;padding:14px;background:rgba(0,0,0,.32);box-sizing:border-box}
+ #ficha-edificio.visible{display:flex}
+ #ficha-edificio .ficha-contenido{position:relative;background:#fff;border-radius:10px;padding:18px 14px 12px;box-shadow:0 5px 28px #0005;width:min(480px,100%);max-height:85dvh;overflow-y:auto;box-sizing:border-box;font-size:14px;line-height:1.5}
+ #ficha-edificio .ficha-cerrar{position:sticky;top:0;float:right;margin:-12px -8px 4px 8px;border:0;border-radius:6px;background:#f0f0f0;font-size:23px;line-height:1;cursor:pointer;padding:5px 10px;z-index:1}
+ #ficha-edificio .ficha-contenido hr:last-child{display:none}
  .item{padding:7px 12px;border-bottom:1px solid #e6e6e6;cursor:pointer;font-size:13px}
  .item:hover{background:#eef3f8}
  .lvl{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
@@ -360,7 +366,7 @@ PLANTILLA = """<!DOCTYPE html>
 .grupo-provincia>.item{margin:0;border-radius:0}
 .grupo-provincia>.item+.item{border-top:1px solid #e6ebf0}
 #marca{justify-content:center;text-align:center}
-.prevision-meteo{margin:8px 0;padding:8px;background:#edf4fb;border-radius:6px;font:12px Arial,sans-serif}.prevision-meteo table{width:100%;border-collapse:collapse}.prevision-meteo td,.prevision-meteo th{padding:4px 3px;text-align:center;border-bottom:1px solid #d5e2ef}.prevision-meteo small{color:#526477}#creditos-meteo{position:fixed;bottom:3px;left:50%;transform:translateX(-50%);z-index:1100;font:9px Arial,sans-serif;color:#475569;background:rgba(255,255,255,.88);padding:2px 7px;border-radius:4px;white-space:nowrap;pointer-events:none}
+.prevision-meteo{margin:8px 0;padding:8px;background:#edf4fb;border-radius:6px;font:12px Arial,sans-serif}.prevision-meteo table{width:100%;border-collapse:collapse}.prevision-meteo td,.prevision-meteo th{padding:4px 3px;text-align:center;border-bottom:1px solid #d5e2ef}.prevision-meteo small{color:#526477}.prevision-meteo .icono-tiempo{display:inline-block;font-size:30px;line-height:1.3;min-width:38px;text-align:center;vertical-align:middle}#creditos-meteo{position:fixed;bottom:3px;left:50%;transform:translateX(-50%);z-index:1100;font:9px Arial,sans-serif;color:#475569;background:rgba(255,255,255,.88);padding:2px 7px;border-radius:4px;white-space:nowrap;pointer-events:none}
 </style></head><body>
 <div id="top"><div id="marca"><img src="logo-agencia-tributaria.jpg" alt="Agencia Tributaria"></div><h1>Alertas AEMET - Edificios</h1><span id="fecha"></span><span id="antiguedad" class="chip" title="Tiempo desde la última consulta AEMET" style="background:#616161">Calculando antigüedad...</span><span id="reloj" title="Hora actual de España"></span>
  <span class="chip" style="background:#d32f2f" id="nr"></span>
@@ -371,13 +377,25 @@ PLANTILLA = """<!DOCTYPE html>
  <div id="ctl"><input type="text" id="buscar" placeholder="Buscar por nombre, código postal, población...">
  <label><input type="checkbox" id="solo"> Solo edificios con alerta</label><br>
  <label><input type="checkbox" id="etq" checked> Mostrar nombres en el mapa</label></div>
- <div id="lista"></div></div><div id="map"></div></div>
+ <div id="lista"></div></div><div id="map"></div></div><div id="ficha-edificio" role="dialog" aria-modal="true" aria-label="Información meteorológica del edificio"><div class="ficha-contenido"><button type="button" class="ficha-cerrar" aria-label="Cerrar información">×</button><div id="ficha-detalle"></div></div></div>
 <script>
 const D = __DATA__;
 function tablaPrevision(e) {
   if (!e.prevision || !e.prevision.length) return '<div class="prevision-meteo">Previsión de tres días no disponible.</div>';
   const nombres = ['Hoy','Mañana','Pasado mañana'];
-  const filas = e.prevision.map((p,i) => '<tr><td><b>'+nombres[i]+'</b><br><small>'+esc(p.fecha)+'</small></td><td>'+esc(p.estado)+'</td><td>'+esc(p.min)+'° / '+esc(p.max)+'°</td><td>'+esc(p.lluvia)+'%</td></tr>').join('');
+  function iconoTiempo(estado) {
+    const t = String(estado || '').toLowerCase();
+    if (t.includes('tormenta')) return '⛈️';
+    if (t.includes('nieve') || t.includes('granizo')) return '🌨️';
+    if (t.includes('lluvia') || t.includes('chubasco') || t.includes('llovizna')) return '🌧️';
+    if (t.includes('niebla')) return '🌫️';
+    if (t.includes('despejado')) return '☀️';
+    if (t.includes('poco nuboso')) return '🌤️';
+    if (t.includes('parcialmente')) return '⛅';
+    if (t.includes('cubierto')) return '☁️';
+    return '🌥️';
+  }
+  const filas = e.prevision.map((p,i) => '<tr><td><b>'+nombres[i]+'</b><br><small>'+esc(p.fecha)+'</small></td><td><span class="icono-tiempo" role="img" aria-label="'+esc(p.estado)+'" title="'+esc(p.estado)+'">'+iconoTiempo(p.estado)+'</span></td><td>'+esc(p.min)+'° / '+esc(p.max)+'°</td><td>'+esc(p.lluvia)+'%</td></tr>').join('');
   return '<div class="prevision-meteo"><b>Previsión meteorológica · 3 días</b><table><tr><th>Día</th><th>Tiempo</th><th>Mín./Máx.</th><th>Lluvia</th></tr>'+filas+'</table><small>Predicción Open-Meteo. Avisos oficiales: AEMET.</small></div>';
 }
 function etiquetaAviso(a) {
@@ -465,6 +483,19 @@ capa.on('tileerror', () => { if (avisado) return; avisado = true;
   b.textContent = 'No se pueden cargar los mapas de fondo (red bloqueada o sin conexion). Se muestran los puntos sin fondo.';
   document.getElementById('map').appendChild(b); });
 
+// Mostrar información centrada en la pantalla, independientemente de los límites del mapa.
+const ficha = document.getElementById('ficha-edificio');
+const fichaDetalle = document.getElementById('ficha-detalle');
+function mostrarFicha(html) {
+  fichaDetalle.innerHTML = html;
+  ficha.classList.add('visible');
+  ficha.querySelector('.ficha-contenido').scrollTop = 0;
+  ficha.querySelector('.ficha-cerrar').focus();
+}
+function cerrarFicha() { ficha.classList.remove('visible'); }
+ficha.querySelector('.ficha-cerrar').onclick = cerrarFicha;
+ficha.addEventListener('click', ev => { if (ev.target === ficha) cerrarFicha(); });
+document.addEventListener('keydown', ev => { if (ev.key === 'Escape') cerrarFicha(); });
 // agrupar edificios por ubicación
 const grupos = {};
 D.edificios.forEach(e => {
@@ -488,7 +519,9 @@ Object.values(grupos).forEach(g => {
     html += '<hr style="margin:6px 0">';
   });
   const m = L.circleMarker([g[0].lat, g[0].lon], {radius: nivel ? 13 : 8, color:'#222', weight:1.5,
-    fillColor: COL[nivel], fillOpacity:.85}).addTo(map).bindPopup(html, {maxHeight: 300});
+    fillColor: COL[nivel], fillOpacity:.85}).addTo(map);
+  m.on('click', () => mostrarFicha(html));
+  m._fichaHtml = html;
   const _n = g.map(e => e.nombre);
   const _txt = _n.length <= 4 ? _n.map(esc).join('<br>') : esc(g[0].poblacion) + ' (' + _n.length + ' sedes)';
   m.bindTooltip(_txt, {permanent: true, direction: 'right', offset: [10, 0], className: 'etq n-' + (nivel || 'OK')});
@@ -531,7 +564,7 @@ function pintar() {
       '<br><small>' + esc(e.poblacion) + ' &middot; ubicación: ' + esc(e.origen) + '</small>' +
       (e.alertas.length ? '<br>' + e.alertas.map(a => '<small style="color:' + COL[a.nivel] + '"><b>' + a.nivel +
         '</b> ' + esc(a.fenomeno) + ' (' + esc(a.inicio) + ' &rarr; ' + esc(a.fin) + ')</small>').join('<br>') : '');
-    d.onclick = () => { if (e.lat != null) { map.setView([e.lat, e.lon], 13); marcador[e.id].openPopup(); document.body.classList.remove('menu-abierto'); setTimeout(() => map.invalidateSize(),250); } };
+    d.onclick = () => { if (e.lat != null) { map.setView([e.lat, e.lon], 13); document.body.classList.remove('menu-abierto'); mostrarFicha(marcador[e.id]._fichaHtml); setTimeout(() => map.invalidateSize(),250); } };
     seccion.appendChild(d);
     });
     lista.appendChild(seccion);
