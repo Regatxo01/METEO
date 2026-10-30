@@ -543,7 +543,7 @@ document.addEventListener('keydown', ev => { if (ev.key === 'Escape') cerrarFich
 const grupos = {};
 D.edificios.forEach(e => {
   if (e.lat == null) return;
-  const k = e.lat.toFixed(3) + ',' + e.lon.toFixed(3);
+  const k = e.lat.toFixed(7) + ',' + e.lon.toFixed(7);
   (grupos[k] = grupos[k] || []).push(e);
 });
 const marcador = {}, bounds = [];
