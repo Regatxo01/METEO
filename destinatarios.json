@@ -4,6 +4,10 @@
       "nombre": "PACO",
       "correo": "regatxo@hotmail.com",
       "activo": true
-    }
-  ]
+},
+  {
+    "nombre": "ROBERTO",
+    "correo": "vazkez2@gmail.com",
+    "activo": true
+  }
 }
