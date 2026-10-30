@@ -1,13 +1,14 @@
 {
   "destinatarios": [
     {
-      "nombre": "PACO",
+      "nombre": "Roberto Vazquez",
+      "correo": "vazkez2@gmail.com",
+      "activo": true
+    },
+    {
+      "nombre": "Francisco Vicedo",
       "correo": "regatxo@hotmail.com",
       "activo": true
-},
-  {
-    "nombre": "ROBERTO",
-    "correo": "vazkez2@gmail.com",
-    "activo": true
-  }
-]
+    }
+  ]
+}
