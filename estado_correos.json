@@ -1,3 +1,32 @@
 {
-  "alertas": {}
+  "alertas": {
+    "[\"V09\", \"Aviso de lluvias de nivel naranja\", \"03/11 21:00\"]": {
+      "edificio": "AD ALZIRA",
+      "nivel": "NARANJA",
+      "fenomeno": "Aviso de lluvias de nivel naranja",
+      "inicio": "03/11 21:00",
+      "fin": "04/11 03:59"
+    },
+    "[\"A10\", \"Aviso de lluvias de nivel naranja\", \"03/11 21:00\"]": {
+      "edificio": "AD DENIA",
+      "nivel": "NARANJA",
+      "fenomeno": "Aviso de lluvias de nivel naranja",
+      "inicio": "03/11 21:00",
+      "fin": "04/11 03:59"
+    },
+    "[\"V11\", \"Aviso de lluvias de nivel naranja\", \"03/11 21:00\"]": {
+      "edificio": "AD GANDÍA",
+      "nivel": "NARANJA",
+      "fenomeno": "Aviso de lluvias de nivel naranja",
+      "inicio": "03/11 21:00",
+      "fin": "04/11 03:59"
+    },
+    "[\"V19\", \"Aviso de lluvias de nivel naranja\", \"03/11 21:00\"]": {
+      "edificio": "AD SUECA",
+      "nivel": "NARANJA",
+      "fenomeno": "Aviso de lluvias de nivel naranja",
+      "inicio": "03/11 21:00",
+      "fin": "04/11 03:59"
+    }
+  }
 }
