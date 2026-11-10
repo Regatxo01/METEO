@@ -1,3 +1,18 @@
 {
-  "alertas": {}
+  "alertas": {
+    "[\"V16\", \"Aviso de vientos de nivel naranja\", \"12/11 00:00\"]": {
+      "edificio": "AD REQUENA",
+      "nivel": "NARANJA",
+      "fenomeno": "Aviso de vientos de nivel naranja",
+      "inicio": "12/11 00:00",
+      "fin": "12/11 08:59"
+    },
+    "[\"V21\", \"Aviso de vientos de nivel naranja\", \"12/11 00:00\"]": {
+      "edificio": "AD XÁTIVA",
+      "nivel": "NARANJA",
+      "fenomeno": "Aviso de vientos de nivel naranja",
+      "inicio": "12/11 00:00",
+      "fin": "12/11 08:59"
+    }
+  }
 }
