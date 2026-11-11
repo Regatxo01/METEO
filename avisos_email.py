@@ -159,6 +159,8 @@ def crear_html(datos, cambios):
 <html lang="es"><head><meta charset="utf-8"></head>
 <body style="margin:0;padding:20px;background:#f2f4f7;font-family:Arial,sans-serif;color:#263238">
 <div style="max-width:1000px;margin:auto;background:#fff;padding:22px;border:1px solid #dce1e6">
+<table role="presentation" border="0" cellpadding="0" cellspacing="0" style="margin:0 0 18px"><tr><td align="center" bgcolor="#2563eb" style="background:#2563eb;border-radius:6px"><a href="https://regatxo01.github.io/METEO/" target="_blank" style="display:inline-block;padding:13px 22px;color:#ffffff;text-decoration:none;font-weight:bold;font-family:Arial,sans-serif;font-size:15px">ABRIR PROGRAMA METEO</a></td></tr></table>
+<p style="margin:0 0 18px;font-size:12px;color:#607d8b">Si no puedes pulsar el botón, abre este enlace: <a href="https://regatxo01.github.io/METEO/" style="color:#2563eb">https://regatxo01.github.io/METEO/</a></p>
 <h2 style="margin:0 0 5px;color:#263b53">METEO · INFORME DE ALERTAS</h2>
 <p style="margin:0 0 18px;color:#607d8b;font-size:13px">Consulta: {fecha}</p>
 <table role="presentation" border="0" cellpadding="8" cellspacing="0" width="100%" style="width:100%;border-collapse:collapse;margin-bottom:22px"><tr>
@@ -173,6 +175,8 @@ def crear_html(datos, cambios):
 <p style="margin-top:24px;color:#78909c;font-size:11px">
 Previsión meteorológica diaria de AEMET. La predicción no constituye por sí misma un aviso oficial.
 </p>
+<table role="presentation" border="0" cellpadding="0" cellspacing="0" style="margin:22px 0 0"><tr><td align="center" bgcolor="#2563eb" style="background:#2563eb;border-radius:6px"><a href="https://regatxo01.github.io/METEO/" target="_blank" style="display:inline-block;padding:13px 22px;color:#ffffff;text-decoration:none;font-weight:bold;font-family:Arial,sans-serif;font-size:15px">ABRIR PROGRAMA METEO</a></td></tr></table>
+<p style="margin:8px 0 0;font-size:12px;color:#607d8b"><a href="https://regatxo01.github.io/METEO/" style="color:#2563eb">https://regatxo01.github.io/METEO/</a></p>
 </div></body></html>"""
 
 
