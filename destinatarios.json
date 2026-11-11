@@ -9,6 +9,16 @@
       "nombre": "Francisco Vicedo",
       "correo": "regatxo@hotmail.com",
       "activo": true
+      },
+    {
+      "nombre": "German Magña",
+      "correo": "germanmchao@gmail.com",
+      "activo": true
+      },
+    {
+      "nombre": "Jesus Civera",
+      "correo": "jecimel@gmail.com",
+      "activo": true
     }
   ]
 }
