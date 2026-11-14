@@ -1,3 +1,11 @@
 {
-  "alertas": {}
+  "alertas": {
+    "[\"C05\", \"Aviso de lluvias de nivel naranja\", \"14/11 16:00\"]": {
+      "edificio": "AD VINAROZ",
+      "nivel": "NARANJA",
+      "fenomeno": "Aviso de lluvias de nivel naranja",
+      "inicio": "14/11 16:00",
+      "fin": "14/11 19:59"
+    }
+  }
 }
